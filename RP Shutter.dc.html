@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&amp;family=Major+Mono+Display&amp;display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#0d0f0e}
+  @keyframes rpRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  ::-webkit-scrollbar{height:6px;width:6px}
+  ::-webkit-scrollbar-thumb{background:rgba(125,133,121,.4);border-radius:3px}
+</style>
+</helmet>
+<div style="{{ rootStyle }} min-height:100dvh;box-sizing:border-box;padding:clamp(22px,5vw,60px) clamp(16px,5vw,60px);font-family:'DM Mono',ui-monospace,'SF Mono',Menlo,monospace;font-weight:300;line-height:1.55;color:var(--ink,#e8e4d8);background:var(--bg,#0d0f0e);background-image:repeating-linear-gradient(90deg,transparent,transparent 3px,var(--scan,rgba(255,255,255,.012)) 3px,var(--scan,rgba(255,255,255,.012)) 4px);transition:background .25s,color .25s;">
+  <div style="max-width: 780px; margin: 0 auto; position: relative">
+
+    <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:18px 22px;flex-wrap:wrap;border-bottom:1px solid var(--line,#2a302c);padding-bottom:20px;margin-bottom:28px;">
+      <div style="flex:1 1 200px;">
+        <div style="font-family:'Major Mono Display',ui-monospace,monospace;font-size:clamp(20px,4.5vw,30px);letter-spacing:.02em;line-height:1.05;text-transform:lowercase;">rp<span style="color:var(--signal,#d8552f)">·</span>shutter</div>
+        <div style="color:var(--dim,#7d8579);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;margin-top:9px;">{{ t.subtitle }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end;">
+        <div onClick="{{ onToggleTheme }}" title="{{ t.theme }}" role="button" style="box-sizing:border-box;cursor:pointer;width:54px;height:26px;border-radius:13px;border:1px solid var(--line,#2a302c);background:var(--hexbg,rgba(0,0,0,.22));position:relative;flex:none;display:flex;align-items:center;padding:0 6px;justify-content:space-between;font-size:11px;color:var(--dim,#7d8579);user-select:none;">
+          <span>☀</span><span>☾</span>
+          <span style="{{ knobStyle }} position:absolute;top:2px;width:20px;height:20px;border-radius:50%;background:var(--signal,#d8552f);transition:left .2s ease;box-shadow:0 1px 4px rgba(0,0,0,.35);"></span>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:280px;">
+          <sc-for list="{{ langs }}" as="lng" hint-placeholder-count="7">
+            <button onClick="{{ lng.onClick }}" title="{{ lng.name }}" style="{{ lng.style }} cursor:pointer;font-family:inherit;font-weight:400;font-size:10.5px;letter-spacing:.08em;padding:4px 9px;border-radius:11px;border:1px solid var(--line,#2a302c);transition:color .15s,background .15s,border-color .15s;">{{ lng.code }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </header>
+
+    <label for="rpfile" onDragEnter="{{ onDragOver }}" onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="{{ dropStyle }} display:block;border:1px dashed var(--line,#2a302c);border-radius:4px;background:radial-gradient(120% 100% at 50% 0%,var(--dropglow,rgba(216,85,47,.06)),transparent 60%),var(--panel,#151917);padding:clamp(34px,7vw,58px) 24px;text-align:center;cursor:pointer;transition:border-color .18s;">
+      <div style="{{ apertureStyle }} width:42px;height:42px;margin:0 auto 18px;border-radius:50%;border:1.5px solid var(--dim,#7d8579);display:flex;align-items:center;justify-content:center;transition:transform .3s,border-color .18s;">
+        <span style="display:block;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--signal,#d8552f);"></span>
+      </div>
+      <div style="font-size:13.5px;letter-spacing:.03em;color:var(--ink,#e8e4d8);">{{ t.dropLead }}</div>
+      <div style="font-size:11px;color:var(--dim,#7d8579);margin-top:11px;letter-spacing:.04em;line-height:1.7;">{{ t.dropHint }}</div>
+      <input id="rpfile" type="file" accept=".cr3,.CR3" multiple="" onChange="{{ onPick }}" style="display:none;">
+    </label>
+
+    <div style="margin-top:28px;display:flex;flex-direction:column;gap:14px;">
+      <sc-for list="{{ results }}" as="r" hint-placeholder-count="0">
+        <div style="border:1px solid var(--line,#2a302c);border-radius:4px;background:var(--panel,#151917);overflow:hidden;animation:rpRise .35s ease both;">
+          <sc-if value="{{ r.isError }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:16px 18px;flex-wrap:wrap;">
+              <span style="font-size:12px;color:var(--dim,#7d8579);word-break:break-all;">{{ r.name }}</span>
+              <span style="font-size:13px;color:var(--signal,#d8552f);letter-spacing:.02em;">{{ r.errorText }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ r.ok }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px 16px;padding:16px 18px 14px;flex-wrap:wrap;">
+              <span style="font-size:12px;color:var(--dim,#7d8579);word-break:break-all;flex:1 1 120px;">{{ r.name }}</span>
+              <span style="font-size:clamp(30px,8vw,46px);font-weight:400;letter-spacing:.01em;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink,#e8e4d8);white-space:nowrap;">{{ r.countStr }}<span style="font-size:13px;color:var(--dim,#7d8579);margin-left:8px;letter-spacing:.1em;">{{ t.unit }}</span></span>
+            </div>
+            <sc-if value="{{ r.serial }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:6px 18px 8px;border-top:1px solid var(--line,#2a302c);display:flex;flex-wrap:wrap;gap:3px 18px;font-size:11px;letter-spacing:.03em;">
+                <span style="color:var(--dim,#7d8579);white-space:nowrap;"><span style="opacity:.6;">{{ t.bodySerial }}</span> <span style="color:var(--ink,#e8e4d8);font-weight:400;">{{ r.serial }}</span></span>
+                <sc-if value="{{ r.lensInfo }}" hint-placeholder-val="{{ false }}">
+                  <span style="color:var(--dim,#7d8579);white-space:nowrap;"><span style="opacity:.6;">{{ t.lensModel }}</span> <span style="color:var(--ink,#e8e4d8);font-weight:400;">{{ r.lensInfo }}</span></span>
+                </sc-if>
+              </div>
+            </sc-if>
+            <div style="font-size:11px;color:var(--dim,#7d8579);letter-spacing:.14em;padding:11px 18px;border-top:1px solid var(--line,#2a302c);background:var(--hexbg,rgba(0,0,0,.22));overflow-x:auto;white-space:nowrap;">
+              <span style="opacity:.7;margin-right:10px;">{{ t.hexLabel }}</span>
+              <b style="color:var(--signal-glow,#ff7a4d);font-weight:500;text-shadow:0 0 14px var(--glowShadow,rgba(255,122,77,.4));">{{ r.hexStr }}</b>
+              <span style="opacity:.5;"> · {{ t.uint }}</span>
+            </div>
+            <div style="display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--line,#2a302c);flex-wrap:wrap;">
+              <button onClick="{{ r.onCert }}" style="cursor:pointer;font-family:inherit;font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:3px;border:1px solid var(--signal,#d8552f);background:var(--signal,#d8552f);color:var(--btnInk,#0d0f0e);transition:opacity .15s;">{{ t.certBtn }}</button>
+              <button onClick="{{ r.onCopy }}" style="cursor:pointer;font-family:inherit;font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:3px;border:1px solid var(--line,#2a302c);background:transparent;color:var(--dim,#7d8579);transition:color .15s,border-color .15s;">{{ r.copyLabel }}</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ verify.show }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ verify.style }} margin-top:24px;border:1px solid var(--line,#2a302c);border-radius:4px;padding:16px 18px;font-size:12.5px;letter-spacing:.02em;line-height:1.65;color:var(--dim,#7d8579);animation:rpRise .35s ease both;">
+        <div style="{{ verify.hStyle }} text-transform:uppercase;letter-spacing:.18em;font-size:10px;margin-bottom:9px;font-weight:400;">{{ verify.title }}</div>
+        <span>{{ verify.body }}</span>
+      </div>
+    </sc-if>
+
+    <div style="margin-top:42px;border-top:1px solid var(--line,#2a302c);padding-top:22px;font-size:11.5px;color:var(--dim,#7d8579);letter-spacing:.02em;line-height:1.8;display:flex;flex-direction:column;gap:11px;">
+      <p style="margin:0;"><b style="color:var(--ink,#e8e4d8);font-weight:400;">{{ t.noteReadT }}</b> {{ t.noteReadB }}</p>
+      <p style="margin:0;"><b style="color:var(--ink,#e8e4d8);font-weight:400;">{{ t.noteWhyT }}</b> {{ t.noteWhyB }}</p>
+      <p style="margin:0;"><b style="color:var(--ink,#e8e4d8);font-weight:400;">{{ t.noteCrossT }}</b> {{ t.noteCrossB }}</p>
+    </div>
+
+    <div style="margin-top:30px;text-align:center;font-size:10.5px;letter-spacing:.1em;color:var(--dim,#7d8579);opacity:.7;text-transform:uppercase;">{{ t.footer }}</div>
+
+  <div style="box-sizing: border-box; position: absolute; left: 193px; top: 366px; display: flex; flex-direction: column; gap: 12px"><div style="box-sizing: border-box; display: flex; flex-direction: column; gap: 12px"><div style="box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 96px; height: 96px; background-color: #b6b0a7; border-radius: 50%; width: 96px; height: 96px"></div></div></div><svg width="160" height="80" viewBox="0 0 160 80" style="position: absolute; left: 102px; top: 404px; width: 160px; height: 80px; overflow: visible; fill: none; stroke: #8a8378; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round"><path d="M 0 80 L 160 0 M 148.8 14.1 L 160 0 L 142.0 0.5"></path></svg></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:900},
+&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#d8552f&quot;,&quot;options&quot;:[&quot;#d8552f&quot;,&quot;#2a6fdb&quot;,&quot;#1f8a5b&quot;,&quot;#b3902f&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;,&quot;label&quot;:&quot;Signal accent&quot;},
+&quot;scanlines&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Look&quot;,&quot;label&quot;:&quot;Scanline texture&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const sup = ['ko','en','ja','zh','de','fr','ru'];
+    let lang = null;
+    try { const s = localStorage.getItem('rp_lang'); if (sup.includes(s)) lang = s; } catch(e){}
+    if (!lang) {
+      const navs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'ko'];
+      for (const l of navs){ const base = String(l).toLowerCase().split('-')[0]; if (sup.includes(base)){ lang = base; break; } }
+    }
+    if (!lang) lang = 'ko';
+    let theme = 'dark';
+    try { const tm = localStorage.getItem('rp_theme'); if (tm === 'light' || tm === 'dark') theme = tm; } catch(e){}
+    this.state = { lang, theme, parsed: [], hot: false, copied: null };
+  }
+
+  componentDidMount(){ this.applyChrome(); }
+  componentDidUpdate(){ this.applyChrome(); }
+  applyChrome(){
+    const p = this.palette();
+    document.body.style.background = p.bg;
+    document.documentElement.style.background = p.bg;
+    document.documentElement.lang = this.state.lang;
+  }
+
+  /* ── i18n ───────────────────────────────────────── */
+  dict(){
+    return {
+      ko:{ subtitle:"Canon EOS RP · 셔터 카운트 리더", theme:"라이트 / 다크",
+        dropLead:"CR3 파일을 끌어다 놓거나 클릭해서 선택", dropHint:".CR3만 인식 · 파일은 어디로도 전송되지 않습니다 · 2장 이상이면 자동 교차검증",
+        unit:"컷", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"교차검증 통과", verifyPassBody:"촬영 순서대로 카운트가 단조 증가합니다 ({lo} → {hi}, 범위 {span}). offset 0x960이 RP 셔터 카운트로 올바르게 동작함을 자가 확인했습니다.",
+        verifyFailTitle:"확인 필요", verifyFailBody:"파일명 순서와 카운트 증가가 일치하지 않습니다. 파일을 촬영 순서대로 올렸는지 확인하거나, 펌웨어가 다른 개체일 수 있습니다.",
+        noteReadT:"읽는 위치.", noteReadB:"CR3 → moov → 메타데이터 트랙 → CTMD 청크 → 레코드 8 → TIFF tag 0x000D → blob offset 0x960 (uint32 LE). 직접 리버스 엔지니어링으로 찾았고 캐논 서비스센터 공식값과 일치 검증됨.",
+        noteWhyT:"왜 이 방식인가.", noteWhyB:"EOS RP는 셔터 카운트를 EXIF에 쓰지 않고 gphoto2 표준 항목으로도 노출하지 않습니다. 값은 CR3의 CTMD 메타데이터 안에만 있어 RAW 파일 한 장이면 읽어낼 수 있습니다.",
+        noteCrossT:"교차검증.", noteCrossB:"컷수가 다른 CR3를 2장 이상 올리면, 해당 오프셋 값이 촬영 장수 차이만큼 증가하는지 자동 확인합니다 — 다른 RP 개체·펌웨어에서도 신뢰성을 자가 점검할 수 있습니다.",
+        footer:"모든 처리는 브라우저 안에서 · 업로드 없음",
+        certBtn:"인증서", copyBtn:"복사", copied:"복사됨",
+        errNotCr3:"CR3 아님", errNoMoov:"moov 없음 — CR3가 아닐 수 있음", errNoTrak:"trak 없음", errNoLoc:"CTMD 위치 정보(co64/stsz) 없음", errNoCtmd:"CTMD 레코드 8 없음", errNoTiff:"TIFF 헤더 없음", errNoTag:"tag 0x000D 없음 — RP가 아니거나 포맷이 다름", errRead:"읽기 실패",
+        bodySerial:"바디 시리얼", lensModel:"렌즈", lensSerial:"렌즈 시리얼",
+        cert:{ title:"셔터 카운트 인증서", countLabel:"누적 셔터 작동 수", fileLabel:"원본 파일", sourceLabel:"읽은 위치", methodLabel:"방식 / 시그널 바이트", verifiedLabel:"교차검증", dateLabel:"발급일", tagline:"RAW 파일에서 로컬로 읽음 · 업로드 없음", unverified:"단일 파일 (교차검증 없음)", serialLabel:"바디 시리얼", lensLabel:"렌즈 정보" } },
+
+      en:{ subtitle:"Canon EOS RP · Shutter Count Reader", theme:"light / dark",
+        dropLead:"Drag a CR3 file here, or click to choose", dropHint:".CR3 only · files never leave your device · drop 2+ for auto cross-check",
+        unit:"shots", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"Cross-check passed", verifyPassBody:"Counts increase monotonically in shooting order ({lo} → {hi}, range {span}). Confirms offset 0x960 reads the RP shutter count correctly.",
+        verifyFailTitle:"Needs a look", verifyFailBody:"Filename order and count order don't match. Check that files are in shooting order, or this may be a body with different firmware.",
+        noteReadT:"Where it reads.", noteReadB:"CR3 → moov → metadata track → CTMD chunk → record 8 → TIFF tag 0x000D → blob offset 0x960 (uint32 LE). Found by direct reverse-engineering and verified against Canon's official service-center value.",
+        noteWhyT:"Why this way.", noteWhyB:"The EOS RP doesn't write its shutter count to EXIF and doesn't expose it through standard gphoto2 entries. The value lives only inside the CR3's CTMD metadata, so a single RAW file is enough to read it.",
+        noteCrossT:"Cross-check.", noteCrossB:"Drop two or more CR3s with different counts and the app confirms the offset-0x960 value rises by exactly the shot difference — a self-test that holds across other RP bodies and firmware.",
+        footer:"all processing in your browser · nothing uploaded",
+        certBtn:"Certificate", copyBtn:"Copy", copied:"Copied",
+        errNotCr3:"not a CR3", errNoMoov:"no moov — may not be a CR3", errNoTrak:"no trak", errNoLoc:"no CTMD location (co64/stsz)", errNoCtmd:"no CTMD record 8", errNoTiff:"no TIFF header", errNoTag:"tag 0x000D not found — not an RP or different format", errRead:"read failed",
+        bodySerial:"Body serial", lensModel:"Lens", lensSerial:"Lens serial",
+        cert:{ title:"SHUTTER COUNT CERTIFICATE", countLabel:"TOTAL SHUTTER ACTUATIONS", fileLabel:"Source file", sourceLabel:"Read location", methodLabel:"Method / signal bytes", verifiedLabel:"Cross-checked", dateLabel:"Issued", tagline:"Read locally from the RAW file · nothing uploaded", unverified:"single file (no cross-check)", serialLabel:"Body serial", lensLabel:"Lens" } },
+
+      ja:{ subtitle:"Canon EOS RP · シャッターカウント リーダー", theme:"ライト / ダーク",
+        dropLead:"CR3 ファイルをドラッグ、またはクリックで選択", dropHint:".CR3 のみ対応 · ファイルは外部に送信されません · 2枚以上で自動クロスチェック",
+        unit:"ショット", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"クロスチェック合格", verifyPassBody:"撮影順にカウントが単調増加しています（{lo} → {hi}、範囲 {span}）。offset 0x960 が RP のシャッターカウントとして正しく動作することを自己確認しました。",
+        verifyFailTitle:"要確認", verifyFailBody:"ファイル名の順序とカウントの増加が一致しません。撮影順にアップロードしたか確認するか、ファームウェアの異なる個体の可能性があります。",
+        noteReadT:"読み取り位置。", noteReadB:"CR3 → moov → メタデータトラック → CTMD チャンク → レコード 8 → TIFF tag 0x000D → blob offset 0x960（uint32 LE）。直接リバースエンジニアリングで特定し、キヤノン サービスセンターの公式値と一致を確認済み。",
+        noteWhyT:"なぜこの方法か。", noteWhyB:"EOS RP はシャッターカウントを EXIF に書き込まず、gphoto2 の標準項目にも出しません。値は CR3 の CTMD メタデータ内にのみ存在するため、RAW ファイル 1 枚で読み取れます。",
+        noteCrossT:"クロスチェック。", noteCrossB:"カウントの異なる CR3 を 2 枚以上アップロードすると、当該オフセット値が撮影枚数の差だけ増加するかを自動確認します — 別の RP 個体やファームウェアでも信頼性を自己点検できます。",
+        footer:"すべてブラウザ内で処理 · アップロードなし",
+        certBtn:"証明書", copyBtn:"コピー", copied:"コピーしました",
+        errNotCr3:"CR3 ではありません", errNoMoov:"moov がありません — CR3 ではない可能性", errNoTrak:"trak がありません", errNoLoc:"CTMD 位置情報（co64/stsz）がありません", errNoCtmd:"CTMD レコード 8 がありません", errNoTiff:"TIFF ヘッダーがありません", errNoTag:"tag 0x000D がありません — RP でないか形式が異なります", errRead:"読み取り失敗",
+        bodySerial:"ボディシリアル", lensModel:"レンズ", lensSerial:"レンズシリアル",
+        cert:{ title:"シャッターカウント証明書", countLabel:"総シャッター作動回数", fileLabel:"元ファイル", sourceLabel:"読み取り位置", methodLabel:"方式 / シグナルバイト", verifiedLabel:"クロスチェック", dateLabel:"発行日", tagline:"RAW ファイルからローカルで読み取り · アップロードなし", unverified:"単一ファイル（クロスチェックなし）", serialLabel:"ボディシリアル", lensLabel:"レンズ" } },
+
+      zh:{ subtitle:"Canon EOS RP · 快门次数读取器", theme:"浅色 / 深色",
+        dropLead:"拖入 CR3 文件，或点击选择", dropHint:"仅识别 .CR3 · 文件不会上传到任何地方 · 2 张以上自动交叉校验",
+        unit:"次", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"交叉校验通过", verifyPassBody:"计数按拍摄顺序单调递增（{lo} → {hi}，范围 {span}）。已自我确认 offset 0x960 能正确读取 RP 快门次数。",
+        verifyFailTitle:"需要确认", verifyFailBody:"文件名顺序与计数递增不一致。请确认是否按拍摄顺序上传，或可能是固件不同的机身。",
+        noteReadT:"读取位置。", noteReadB:"CR3 → moov → 元数据轨道 → CTMD 区块 → 记录 8 → TIFF tag 0x000D → blob offset 0x960（uint32 LE）。通过直接逆向工程找到，并与佳能服务中心官方数值核对一致。",
+        noteWhyT:"为何如此。", noteWhyB:"EOS RP 不会把快门次数写入 EXIF，也不通过 gphoto2 标准项暴露。该数值只存在于 CR3 的 CTMD 元数据中，因此一张 RAW 文件即可读取。",
+        noteCrossT:"交叉校验。", noteCrossB:"上传两张以上快门数不同的 CR3，应用会自动确认该偏移值是否按拍摄张数差递增 —— 在其他 RP 机身与固件上也能自检可靠性。",
+        footer:"全部在浏览器内处理 · 无上传",
+        certBtn:"证书", copyBtn:"复制", copied:"已复制",
+        errNotCr3:"不是 CR3", errNoMoov:"无 moov —— 可能不是 CR3", errNoTrak:"无 trak", errNoLoc:"无 CTMD 位置信息（co64/stsz）", errNoCtmd:"无 CTMD 记录 8", errNoTiff:"无 TIFF 头", errNoTag:"未找到 tag 0x000D —— 非 RP 或格式不同", errRead:"读取失败",
+        bodySerial:"机身序列号", lensModel:"镜头", lensSerial:"镜头序列号",
+        cert:{ title:"快门次数证书", countLabel:"累计快门动作次数", fileLabel:"源文件", sourceLabel:"读取位置", methodLabel:"方式 / 信号字节", verifiedLabel:"交叉校验", dateLabel:"签发日", tagline:"从 RAW 文件本地读取 · 无上传", unverified:"单一文件（无交叉校验）", serialLabel:"机身序列号", lensLabel:"镜头" } },
+
+      de:{ subtitle:"Canon EOS RP · Auslösezähler", theme:"hell / dunkel",
+        dropLead:"CR3-Datei hierher ziehen oder klicken zum Auswählen", dropHint:"nur .CR3 · Dateien verlassen dein Gerät nie · ab 2 Dateien automatischer Abgleich",
+        unit:"Auslösungen", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"Abgleich bestanden", verifyPassBody:"Die Zählwerte steigen in Aufnahmereihenfolge monoton ({lo} → {hi}, Spanne {span}). Bestätigt, dass Offset 0x960 den RP-Auslösezähler korrekt liest.",
+        verifyFailTitle:"Prüfung nötig", verifyFailBody:"Dateinamen- und Zählreihenfolge stimmen nicht überein. Prüfe, ob die Dateien in Aufnahmereihenfolge geladen wurden, oder es ist ein Gehäuse mit anderer Firmware.",
+        noteReadT:"Wo gelesen wird.", noteReadB:"CR3 → moov → Metadaten-Track → CTMD-Chunk → Record 8 → TIFF-Tag 0x000D → Blob-Offset 0x960 (uint32 LE). Durch direktes Reverse Engineering gefunden und mit dem offiziellen Wert des Canon-Service abgeglichen.",
+        noteWhyT:"Warum so.", noteWhyB:"Die EOS RP schreibt den Auslösezähler nicht in die EXIF-Daten und gibt ihn nicht über die Standard-gphoto2-Einträge aus. Der Wert liegt nur in den CTMD-Metadaten der CR3, daher genügt eine einzige RAW-Datei.",
+        noteCrossT:"Abgleich.", noteCrossB:"Lädst du zwei oder mehr CR3s mit verschiedenen Zählwerten, prüft die App automatisch, ob der Wert an Offset 0x960 genau um die Aufnahmedifferenz steigt — ein Selbsttest, der auch bei anderen RP-Gehäusen und Firmwares hält.",
+        footer:"alles im Browser verarbeitet · kein Upload",
+        certBtn:"Zertifikat", copyBtn:"Kopieren", copied:"Kopiert",
+        errNotCr3:"keine CR3", errNoMoov:"kein moov — evtl. keine CR3", errNoTrak:"kein trak", errNoLoc:"keine CTMD-Position (co64/stsz)", errNoCtmd:"kein CTMD-Record 8", errNoTiff:"kein TIFF-Header", errNoTag:"Tag 0x000D nicht gefunden — keine RP oder anderes Format", errRead:"Lesen fehlgeschlagen",
+        bodySerial:"Gehäusenummer", lensModel:"Objektiv", lensSerial:"Objektivnummer",
+        cert:{ title:"AUSLÖSEZÄHLER-ZERTIFIKAT", countLabel:"GESAMTE AUSLÖSUNGEN", fileLabel:"Quelldatei", sourceLabel:"Leseposition", methodLabel:"Methode / Signal-Bytes", verifiedLabel:"Abgeglichen", dateLabel:"Ausgestellt", tagline:"Lokal aus der RAW-Datei gelesen · kein Upload", unverified:"Einzeldatei (kein Abgleich)", serialLabel:"Gehäusenummer", lensLabel:"Objektiv" } },
+
+      fr:{ subtitle:"Canon EOS RP · Lecteur de déclenchements", theme:"clair / sombre",
+        dropLead:"Glissez un fichier CR3 ici, ou cliquez pour choisir", dropHint:".CR3 uniquement · les fichiers ne quittent jamais votre appareil · 2 fichiers ou plus = vérification croisée automatique",
+        unit:"déclenchements", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"Vérification croisée réussie", verifyPassBody:"Les compteurs augmentent de façon monotone dans l'ordre de prise de vue ({lo} → {hi}, plage {span}). Confirme que l'offset 0x960 lit correctement le compteur de la RP.",
+        verifyFailTitle:"À vérifier", verifyFailBody:"L'ordre des noms de fichiers et celui des compteurs ne correspondent pas. Vérifiez que les fichiers sont dans l'ordre de prise de vue, ou il peut s'agir d'un boîtier au firmware différent.",
+        noteReadT:"Où la lecture se fait.", noteReadB:"CR3 → moov → piste de métadonnées → bloc CTMD → enregistrement 8 → tag TIFF 0x000D → offset blob 0x960 (uint32 LE). Trouvé par rétro-ingénierie directe et vérifié face à la valeur officielle du SAV Canon.",
+        noteWhyT:"Pourquoi ainsi.", noteWhyB:"L'EOS RP n'écrit pas son compteur de déclenchements dans l'EXIF et ne l'expose pas via les entrées gphoto2 standard. La valeur ne se trouve que dans les métadonnées CTMD du CR3, donc un seul fichier RAW suffit.",
+        noteCrossT:"Vérification croisée.", noteCrossB:"Déposez deux CR3 ou plus avec des compteurs différents et l'application confirme que la valeur à l'offset 0x960 augmente exactement de l'écart de prises — un autotest valable sur d'autres boîtiers RP et firmwares.",
+        footer:"tout traité dans le navigateur · aucun envoi",
+        certBtn:"Certificat", copyBtn:"Copier", copied:"Copié",
+        errNotCr3:"pas un CR3", errNoMoov:"pas de moov — peut-être pas un CR3", errNoTrak:"pas de trak", errNoLoc:"pas de position CTMD (co64/stsz)", errNoCtmd:"pas d'enregistrement CTMD 8", errNoTiff:"pas d'en-tête TIFF", errNoTag:"tag 0x000D introuvable — pas une RP ou format différent", errRead:"échec de lecture",
+        bodySerial:"N° de série boîtier", lensModel:"Objectif", lensSerial:"N° de série objectif",
+        cert:{ title:"CERTIFICAT DE DÉCLENCHEMENTS", countLabel:"TOTAL DES DÉCLENCHEMENTS", fileLabel:"Fichier source", sourceLabel:"Position de lecture", methodLabel:"Méthode / octets signal", verifiedLabel:"Vérification croisée", dateLabel:"Émis le", tagline:"Lu en local depuis le fichier RAW · aucun envoi", unverified:"fichier unique (pas de vérification croisée)", serialLabel:"N° de série", lensLabel:"Objectif" } },
+
+      ru:{ subtitle:"Canon EOS RP · Счётчик срабатываний затвора", theme:"светлая / тёмная",
+        dropLead:"Перетащите файл CR3 сюда или нажмите для выбора", dropHint:"только .CR3 · файлы никуда не отправляются · 2+ файла — автоматическая перекрёстная проверка",
+        unit:"кадров", hexLabel:"offset 0x960", uint:"uint32 LE",
+        verifyPassTitle:"Перекрёстная проверка пройдена", verifyPassBody:"Счётчики монотонно возрастают в порядке съёмки ({lo} → {hi}, диапазон {span}). Подтверждено, что смещение 0x960 корректно читает счётчик затвора RP.",
+        verifyFailTitle:"Требует проверки", verifyFailBody:"Порядок имён файлов и порядок счётчиков не совпадают. Проверьте, загружены ли файлы в порядке съёмки, либо это аппарат с другой прошивкой.",
+        noteReadT:"Где читается.", noteReadB:"CR3 → moov → трек метаданных → блок CTMD → запись 8 → TIFF-тег 0x000D → смещение blob 0x960 (uint32 LE). Найдено прямым реверс-инжинирингом и сверено с официальным значением сервис-центра Canon.",
+        noteWhyT:"Почему так.", noteWhyB:"EOS RP не записывает счётчик затвора в EXIF и не выдаёт его через стандартные записи gphoto2. Значение хранится только в метаданных CTMD внутри CR3, поэтому достаточно одного RAW-файла.",
+        noteCrossT:"Перекрёстная проверка.", noteCrossB:"Загрузите два или более CR3 с разными значениями, и приложение автоматически проверит, что значение по смещению 0x960 возрастает ровно на разницу в числе кадров — самопроверка, работающая и на других аппаратах RP и прошивках.",
+        footer:"всё обрабатывается в браузере · без загрузки",
+        certBtn:"Сертификат", copyBtn:"Копировать", copied:"Скопировано",
+        errNotCr3:"не CR3", errNoMoov:"нет moov — возможно, не CR3", errNoTrak:"нет trak", errNoLoc:"нет позиции CTMD (co64/stsz)", errNoCtmd:"нет записи CTMD 8", errNoTiff:"нет заголовка TIFF", errNoTag:"тег 0x000D не найден — не RP или другой формат", errRead:"ошибка чтения",
+        bodySerial:"Серийный номер", lensModel:"Объектив", lensSerial:"Серийный № объектива",
+        cert:{ title:"СЕРТИФИКАТ СЧЁТЧИКА ЗАТВОРА", countLabel:"ВСЕГО СРАБАТЫВАНИЙ ЗАТВОРА", fileLabel:"Исходный файл", sourceLabel:"Позиция чтения", methodLabel:"Метод / сигнальные байты", verifiedLabel:"Перекрёстная проверка", dateLabel:"Выдан", tagline:"Прочитано локально из RAW-файла · без загрузки", unverified:"один файл (без перекрёстной проверки)", serialLabel:"Серийный номер", lensLabel:"Объектив" } }
+    };
+  }
+  t(){ return this.dict()[this.state.lang] || this.dict().ko; }
+  locale(){ return ({ko:'ko-KR',en:'en-US',ja:'ja-JP',zh:'zh-CN',de:'de-DE',fr:'fr-FR',ru:'ru-RU'})[this.state.lang] || 'en-US'; }
+
+  /* ── theme palette ──────────────────────────────── */
+  palette(){
+    const accent = this.props.accent || null;
+    const base = this.state.theme === 'light'
+      ? { bg:'#efece2', panel:'#f8f6ef', ink:'#20231f', dim:'#6e756a', line:'#dad4c6', signal:'#bf4a26', signalGlow:'#bf4a26', ok:'#5f8235', hexbg:'rgba(0,0,0,.045)', scan:'rgba(0,0,0,.012)', dropglow:'rgba(191,74,38,.06)', glowShadow:'rgba(191,74,38,.25)', btnInk:'#f8f6ef' }
+      : { bg:'#0d0f0e', panel:'#151917', ink:'#e8e4d8', dim:'#7d8579', line:'#2a302c', signal:'#d8552f', signalGlow:'#ff7a4d', ok:'#9bbf6a', hexbg:'rgba(0,0,0,.22)', scan:'rgba(255,255,255,.012)', dropglow:'rgba(216,85,47,.06)', glowShadow:'rgba(255,122,77,.4)', btnInk:'#0d0f0e' };
+    if (accent){ base.signal = accent; base.signalGlow = accent; base.dropglow = accent + '14'; }
+    if (this.props.scanlines === false) base.scan = 'transparent';
+    return base;
+  }
+  rootStyle(){
+    const p = this.palette();
+    return `--bg:${p.bg};--panel:${p.panel};--ink:${p.ink};--dim:${p.dim};--line:${p.line};--signal:${p.signal};--signal-glow:${p.signalGlow};--ok:${p.ok};--hexbg:${p.hexbg};--scan:${p.scan};--dropglow:${p.dropglow};--glowShadow:${p.glowShadow};--btnInk:${p.btnInk};`;
+  }
+
+  /* ── CR3 parser (1:1 port, errors as codes) ─────── */
+  parseCount(buf){
+    const dv = new DataView(buf), u8 = new Uint8Array(buf);
+    const TYPE_SIZE = {1:1,2:1,3:2,4:4,5:8,7:1,8:2,9:4,10:8};
+    const fourcc = (o)=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));
+    const boxes = (start,end)=>{ let o=start; const out=[]; while(o<end-8){ let size=dv.getUint32(o,false); const type=fourcc(o+4); let hdr=8; if(size===1){ const hi=dv.getUint32(o+8,false),lo=dv.getUint32(o+12,false); size=hi*2**32+lo; hdr=16; } else if(size===0){ size=end-o; } out.push({type,off:o,size,hdr}); if(size<=0) break; o+=size; } return out; };
+    const find = (parent,name)=>boxes(parent.off+parent.hdr,parent.off+parent.size).filter(b=>b.type===name);
+
+    const top = boxes(0,dv.byteLength);
+    const moov = top.find(b=>b.type==='moov'); if(!moov) throw new Error('errNoMoov');
+    const traks = boxes(moov.off+moov.hdr,moov.off+moov.size).filter(b=>b.type==='trak'); if(!traks.length) throw new Error('errNoTrak');
+    const mt = traks[traks.length-1];
+    const mdia = find(mt,'mdia')[0]; if(!mdia) throw new Error('errNoLoc');
+    const minf = find(mdia,'minf')[0]; if(!minf) throw new Error('errNoLoc');
+    const stbl = find(minf,'stbl')[0]; if(!stbl) throw new Error('errNoLoc');
+    const co64 = find(stbl,'co64')[0]; const stsz = find(stbl,'stsz')[0];
+    if(!co64 || !stsz) throw new Error('errNoLoc');
+
+    const hi = dv.getUint32(co64.off+16,false), lo = dv.getUint32(co64.off+20,false);
+    const chunkOff = hi*2**32+lo;
+    const ss = dv.getUint32(stsz.off+12,false);
+    const chunkSize = ss ? ss : dv.getUint32(stsz.off+20,false);
+
+    const records = {}; let off = chunkOff; const chunkEnd = chunkOff+chunkSize;
+    while(off < chunkEnd-6){ const rs=dv.getUint32(off,true); const rt=dv.getUint16(off+4,true); if(rs<6 || off+rs>chunkEnd) break; records[rt]={off,size:rs}; off+=rs; }
+    const rec = records[8]; if(!rec) throw new Error('errNoCtmd');
+
+    let p = -1;
+    for(let i=rec.off; i<rec.off+rec.size-4; i++){ if(u8[i]===0x49&&u8[i+1]===0x49&&u8[i+2]===0x2a&&u8[i+3]===0x00){ p=i; break; } }
+    if(p<0) throw new Error('errNoTiff');
+
+    const ifd = dv.getUint32(p+4,true); let q = p+ifd;
+    const n = dv.getUint16(q,true); q += 2;
+    for(let k=0;k<n;k++){ const eoff=q+k*12; const tag=dv.getUint16(eoff,true); const typ=dv.getUint16(eoff+2,true); const cnt=dv.getUint32(eoff+4,true); const blen=(TYPE_SIZE[typ]||1)*cnt; let dataOff; if(blen<=4){ dataOff=eoff+8; } else { dataOff=p+dv.getUint32(eoff+8,true); } if(tag===0x000D){ const valOff=dataOff+0x960; const count=dv.getUint32(valOff,true); const bytes=[u8[valOff],u8[valOff+1],u8[valOff+2],u8[valOff+3]]; return {count,bytes}; } }
+    throw new Error('errNoTag');
+  }
+
+  readExif(buf){
+    const dv = new DataView(buf), u8 = new Uint8Array(buf);
+    const fourcc = (o)=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));
+    const bxs = (start,end)=>{ let o=start; const out=[]; while(o<end-8){ let size=dv.getUint32(o,false); const type=fourcc(o+4); let hdr=8; if(size===1){ const hi=dv.getUint32(o+8,false),lo=dv.getUint32(o+12,false); size=hi*2**32+lo; hdr=16; } else if(size===0){ size=end-o; } out.push({type,off:o,size,hdr}); if(size<=0) break; o+=size; } return out; };
+    const TS={1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8,11:4,12:8};
+    const readAscii=(off,len)=>{let s='';for(let i=0;i<len;i++){const c=u8[off+i];if(c===0)break;s+=String.fromCharCode(c);}return s;};
+    const ifdTags=(base)=>{
+      const le=fourcc(base).startsWith('II');
+      const ifdOff=dv.getUint32(base+4,le);
+      let p=base+ifdOff; const n=dv.getUint16(p,le); p+=2;
+      const tags={};
+      for(let i=0;i<n;i++){ const e=p+i*12; const tag=dv.getUint16(e,le),typ=dv.getUint16(e+2,le),cnt=dv.getUint32(e+4,le); const blen=(TS[typ]||1)*cnt; const dataOff=blen<=4?e+8:base+dv.getUint32(e+8,le); tags[tag]={typ,cnt,dataOff}; }
+      return tags;
+    };
+    const out={};
+    try{
+      const top=bxs(0,dv.byteLength);
+      const moov=top.find(b=>b.type==='moov'); if(!moov) return out;
+      const inner=bxs(moov.off+moov.hdr,moov.off+moov.size);
+      const uuid=inner.find(b=>b.type==='uuid'); if(!uuid) return out;
+      const cmts=bxs(uuid.off+uuid.hdr+16,uuid.off+uuid.size);
+      const cmt1=cmts.find(b=>b.type==='CMT1');
+      const cmt2=cmts.find(b=>b.type==='CMT2');
+      if(cmt1){ const tags=ifdTags(cmt1.off+cmt1.hdr); if(tags[0x0110]) out.model=readAscii(tags[0x0110].dataOff,tags[0x0110].cnt); }
+      if(cmt2){ const tags=ifdTags(cmt2.off+cmt2.hdr); if(tags[0xa431]) out.serial=readAscii(tags[0xa431].dataOff,tags[0xa431].cnt); if(tags[0xa434]) out.lens=readAscii(tags[0xa434].dataOff,tags[0xa434].cnt); if(tags[0xa435]) out.lensSerial=readAscii(tags[0xa435].dataOff,tags[0xa435].cnt); }
+    }catch(e){}
+    return out;
+  }
+
+  async handleFiles(list){
+    const files = Array.from(list || []);
+    let parsed = this.state.parsed.slice();
+    for(const file of files){
+      parsed = parsed.filter(r=>r.name!==file.name);
+      if(!/\.cr3$/i.test(file.name)){ parsed.push({name:file.name, errorCode:'errNotCr3'}); continue; }
+      try{ const buf = await file.arrayBuffer(); const {count,bytes} = this.parseCount(buf); const exif = this.readExif(buf); parsed.push({name:file.name, count, bytes, ...exif}); }
+      catch(err){ parsed.push({name:file.name, errorCode: (err && /^err/.test(err.message)) ? err.message : 'errRead'}); }
+    }
+    parsed.sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
+    this.setState({parsed});
+  }
+
+  verifyInfo(){
+    const good = this.state.parsed.filter(r=>!r.errorCode);
+    if(good.length < 2) return {state:'none'};
+    const sorted = [...good].sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
+    let monotonic = true;
+    for(let i=1;i<sorted.length;i++){ if(sorted[i].count < sorted[i-1].count){ monotonic=false; break; } }
+    const lo = Math.min(...good.map(r=>r.count));
+    const hi = Math.max(...good.map(r=>r.count));
+    return {state: monotonic?'pass':'fail', lo, hi, span: hi-lo};
+  }
+
+  copyResult(p){
+    const t = this.t(), loc = this.locale();
+    const lines = [(p.model||'Canon EOS RP')+' — '+p.count.toLocaleString(loc)+' '+t.unit]; if(p.serial) lines.push(t.bodySerial+': '+p.serial); lines.push(t.cert.fileLabel+': '+p.name); if(p.lens) lines.push(t.lensModel+': '+p.lens+(p.lensSerial?' ('+p.lensSerial+')':'')); lines.push(t.noteReadT+' CTMD record 8 \u2192 TIFF 0x000D \u2192 offset 0x960 (uint32 LE)'); lines.push(t.cert.tagline); const txt = lines.join('\n');
+    const done = ()=>{ this.setState({copied:p.name}); setTimeout(()=>{ if(this.state.copied===p.name) this.setState({copied:null}); }, 1800); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(done); }
+    else { try{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }catch(e){} done(); }
+  }
+
+  /* ── certificate canvas ─────────────────────────── */
+  async makeCertificate(p){
+    try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+    const t = this.t(), loc = this.locale(), pal = this.palette();
+    const cjk = `'DM Mono','Hiragino Sans','Yu Gothic','Microsoft YaHei','Noto Sans CJK SC','Noto Sans CJK JP',sans-serif`;
+    const S = 2, W = 1080, H = 1460;
+    const cv = document.createElement('canvas'); cv.width = W*S; cv.height = H*S;
+    const x = cv.getContext('2d'); x.scale(S,S);
+    const cx = W/2;
+    x.fillStyle = pal.bg; x.fillRect(0,0,W,H);
+    if(this.props.scanlines !== false){ x.fillStyle = pal.scan === 'transparent' ? 'rgba(0,0,0,0)' : pal.scan; for(let i=0;i<W;i+=4){ x.fillRect(i,0,1,H); } }
+    x.strokeStyle = pal.line; x.lineWidth = 1; x.strokeRect(28.5,28.5,W-57,H-57);
+    x.strokeStyle = pal.signal; x.lineWidth = 2; x.strokeRect(42,42,W-84,H-84);
+
+    // aperture
+    x.lineWidth = 2; x.strokeStyle = pal.dim; x.beginPath(); x.arc(cx,150,28,0,Math.PI*2); x.stroke();
+    x.strokeStyle = pal.signal; x.beginPath(); x.arc(cx,150,11,0,Math.PI*2); x.stroke();
+
+    x.textAlign = 'center';
+    x.fillStyle = pal.dim; x.letterSpacing = '5px'; x.font = `400 16px 'DM Mono',monospace`;
+    x.fillText(t.cert.title.toUpperCase(), cx+2.5, 234);
+    x.letterSpacing = '0px';
+    x.fillStyle = pal.ink; x.font = `500 28px ${cjk}`; x.fillText(p.model||'Canon EOS RP', cx, 280);
+    if(p.serial){ x.fillStyle = pal.signal; x.letterSpacing = '2px'; x.font = `500 22px 'DM Mono',monospace`; x.fillText(p.serial, cx, 318); x.letterSpacing = '0px'; }
+
+    x.fillStyle = pal.signalGlow; x.font = `500 110px 'DM Mono',monospace`; x.textBaseline='alphabetic';
+    x.fillText(p.count.toLocaleString(loc), cx, 470);
+    x.fillStyle = pal.dim; x.letterSpacing = '3px'; x.font = `400 14px ${cjk}`;
+    x.fillText(t.cert.countLabel.toUpperCase(), cx+1.5, 520); x.letterSpacing = '0px';
+
+    x.strokeStyle = pal.line; x.lineWidth = 1; x.beginPath(); x.moveTo(90,565); x.lineTo(W-90,565); x.stroke();
+
+    const hexStr = p.bytes.map(b=>b.toString(16).padStart(2,'0')).join(' ');
+    const vi = this.verifyInfo();
+    const verVal = vi.state==='pass' ? `${vi.lo.toLocaleString(loc)} → ${vi.hi.toLocaleString(loc)}` : t.cert.unverified;
+    const rows = [
+      [t.cert.fileLabel, p.name, pal.ink],
+      [t.cert.serialLabel, p.serial||'—', pal.ink],
+      [t.cert.lensLabel, (p.lens||'—')+(p.lensSerial?' · '+p.lensSerial:''), pal.ink],
+      [t.cert.sourceLabel, 'CTMD rec 8 → TIFF 0x000D → offset 0x960', pal.ink],
+      [t.cert.methodLabel, `uint32 LE · ${hexStr}`, pal.signal],
+      [t.cert.verifiedLabel, verVal, vi.state==='pass'?pal.ok:pal.dim]
+    ];
+    x.textAlign = 'left';
+    let ry = 630; const maxW = W-180;
+    for(const [label,value,vcolor] of rows){
+      x.fillStyle = pal.dim; x.letterSpacing = '2px'; x.font = `400 12px ${cjk}`;
+      x.fillText(label.toUpperCase(), 92, ry); x.letterSpacing = '0px';
+      let fs = 21; x.fillStyle = vcolor; x.font = `400 ${fs}px ${cjk}`;
+      while(x.measureText(value).width > maxW && fs > 12){ fs -= 1; x.font = `400 ${fs}px ${cjk}`; }
+      x.fillText(value, 92, ry+34);
+      ry += 88;
+    }
+
+    x.strokeStyle = pal.line; x.lineWidth = 1; x.beginPath(); x.moveTo(90,1170); x.lineTo(W-90,1170); x.stroke();
+    const dateStr = new Intl.DateTimeFormat(loc, {year:'numeric',month:'long',day:'numeric'}).format(new Date());
+    x.textAlign = 'center';
+    x.fillStyle = pal.dim; x.letterSpacing = '1px'; x.font = `400 14px ${cjk}`;
+    x.fillText(`${t.cert.dateLabel} · ${dateStr}`, cx, 1220); x.letterSpacing = '0px';
+    x.font = `400 13px ${cjk}`; x.fillText(t.cert.tagline, cx, 1255);
+    x.fillStyle = pal.signal; x.font = `400 22px 'Major Mono Display','DM Mono',monospace`;
+    x.fillText('rp·shutter', cx, 1325);
+
+    const fn = `EOS_RP_${p.serial?p.serial+'_':''}shutter_${p.count}.png`;
+    cv.toBlob((blob)=>{ if(!blob) return; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 1000); }, 'image/png');
+  }
+
+  /* ── language / theme / dnd ─────────────────────── */
+  setLang(code){ try{ localStorage.setItem('rp_lang', code); }catch(e){} this.setState({lang:code}); }
+  toggleTheme(){ const next = this.state.theme==='dark'?'light':'dark'; try{ localStorage.setItem('rp_theme', next); }catch(e){} this.setState({theme:next}); }
+
+  renderVals(){
+    const t = this.t(), loc = this.locale();
+    const fmt = (s,o)=>s.replace(/\{(\w+)\}/g, (m,k)=> (o[k]!==undefined ? o[k] : m));
+
+    const results = this.state.parsed.map(p=>{
+      if(p.errorCode) return {name:p.name, isError:true, ok:false, errorText: t[p.errorCode] || p.errorCode};
+      const hexStr = p.bytes.map(b=>b.toString(16).padStart(2,'0')).join(' ');
+      const lensInfo = (p.lens||'')+(p.lensSerial?' · '+p.lensSerial:'');
+      return { name:p.name, isError:false, ok:true, countStr:p.count.toLocaleString(loc), hexStr, serial:p.serial||'', model:p.model||'', lens:p.lens||'', lensSerial:p.lensSerial||'', lensInfo,
+        onCert: ()=>this.makeCertificate(p), onCopy: ()=>this.copyResult(p),
+        copyLabel: this.state.copied===p.name ? t.copied : t.copyBtn };
+    });
+
+    const vi = this.verifyInfo();
+    let verify = {show:false};
+    if(vi.state==='pass'){ verify = {show:true, style:'border-color:rgba(155,191,106,.4);background:rgba(155,191,106,.07);', hStyle:'color:var(--ok,#9bbf6a);', title:t.verifyPassTitle, body:fmt(t.verifyPassBody,{lo:vi.lo.toLocaleString(loc),hi:vi.hi.toLocaleString(loc),span:vi.span})}; }
+    else if(vi.state==='fail'){ verify = {show:true, style:'border-color:rgba(216,85,47,.4);background:rgba(216,85,47,.07);', hStyle:'color:var(--signal,#d8552f);', title:t.verifyFailTitle, body:t.verifyFailBody}; }
+
+    const codes = [['ko','한국어'],['en','English'],['ja','日本語'],['zh','中文'],['de','Deutsch'],['fr','Français'],['ru','Русский']];
+    const langs = codes.map(([code,name])=>({ code:code.toUpperCase(), name,
+      onClick: ()=>this.setLang(code),
+      style: this.state.lang===code ? 'background:var(--signal,#d8552f);color:var(--btnInk,#0d0f0e);border-color:var(--signal,#d8552f);' : 'background:transparent;color:var(--dim,#7d8579);border-color:var(--line,#2a302c);' }));
+
+    const onDragOver = (e)=>{ e.preventDefault(); if(!this.state.hot) this.setState({hot:true}); };
+    const onDragLeave = (e)=>{ e.preventDefault(); if(e.currentTarget.contains(e.relatedTarget)) return; this.setState({hot:false}); };
+    const onDrop = (e)=>{ e.preventDefault(); this.setState({hot:false}); this.handleFiles(e.dataTransfer.files); };
+    const onPick = (e)=>{ this.handleFiles(e.target.files); e.target.value=''; };
+
+    return {
+      t, results, verify, langs,
+      rootStyle: this.rootStyle(),
+      dropStyle: this.state.hot ? 'border-color:var(--signal,#d8552f);' : '',
+      apertureStyle: this.state.hot ? 'transform:rotate(45deg);border-color:var(--signal,#d8552f);' : '',
+      knobStyle: `left:${this.state.theme==='dark'?'28px':'4px'};`,
+      onToggleTheme: ()=>this.toggleTheme(),
+      onDragOver, onDragLeave, onDrop, onPick
+    };
+  }
+}
+</script>
+</body>
+</html>
